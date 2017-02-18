@@ -24,7 +24,8 @@ function requireAuth(req, res, next) {
 router.get('/', (req, res, next) => {
   res.render('content/index', {
     title: 'Home',
-    games: ''
+    games: '',
+    displayName: req.user ? req.user.displayName: '' //? either .user or .displayname
    });
 });
 
@@ -32,7 +33,8 @@ router.get('/', (req, res, next) => {
 router.get('/contact', (req, res, next) => {
   res.render('content/contact', {
     title: 'Contact',
-    games: ''
+    games: '',
+    displayName: req.user ? req.user.displayName: '' //? either .user or .displayname
    });
 });
 
@@ -70,9 +72,6 @@ router.get('/register', (req, res, next) => {
       messages: req.flash('registerMessage'),
       displayName: req.user ? req.user.displayName: '' //? either .user or .displayname
     });
-    return; 
-  } else {
-    return res.redirect('/games'); //redirect to games list
   }
 });
 
@@ -94,7 +93,7 @@ router.post('/register', (req, res, next) => {
           req.flash('registerMessage', 'Registration Error: User already exists');
         }
         return res.render('auth/register', {
-           title: "Register",
+          title: "Register",
           games: '',
           messages: req.flash('registerMessage'),
           displayName: req.user ? req.user.displayName: '' //? either .user or .displayname
