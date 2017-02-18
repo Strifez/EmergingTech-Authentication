@@ -54,17 +54,23 @@ router.get('/login', (req, res, next) => {
 });
 
 // POST /Login - process the Login attempt
-router.post('/login', (req, res, next) => {
-  
-});
+router.post('/login', passport.authenticate('local', {
+  successRedirect: '/games',
+  failureRedirect: '/login',
+  failureFlash: "Incorrect Username/Password", // match the loginMessage above
+}));
 
 // GET /Register - render the registration view
 router.get('/register', (req, res, next) => {
-  // Check to see if the user is not already logged index
-  if(!req.user){
-
-    //TODO
-
+   if(!req.user){
+    //render the Register page
+    res.render('auth/register', {
+      title: "Register",
+      games: '',
+      messages: req.flash('registerMessage'),
+      displayName: req.user ? req.user.displayName: '' //? either .user or .displayname
+    });
+    return; 
   } else {
     return res.redirect('/games'); //redirect to games list
   }
@@ -72,12 +78,39 @@ router.get('/register', (req, res, next) => {
 
 // POST /Register - process the Register attempt
 router.post('/register', (req, res, next) => {
-  
+  User.register(
+    new User ({ 
+      //coming from the form in the register page
+      username: req.body.username,
+      //password: req.body.password,
+      email: req.body.email,
+      displayName: req.body.displayName
+    }),
+    req.body.password,
+    (err) => {
+      if(err){
+        console.log('error inserting new user');
+        if(err.name == "UserExistsError"){
+          req.flash('registerMessage', 'Registration Error: User already exists');
+        }
+        return res.render('auth/register', {
+           title: "Register",
+          games: '',
+          messages: req.flash('registerMessage'),
+          displayName: req.user ? req.user.displayName: '' //? either .user or .displayname
+        })
+      }
+      // if registration is successful
+      return passport.authenticate('local')(req,res, () =>{
+        res.redirect('/games');
+      });
+    });
 });
 
 // GET /Logout - process the Logout response
 router.get('/logout', (req, res, next) => {
-  
+  req.logout();
+  res.redirect('/'); //redirect to the home page
 });
 
 module.exports = router;
